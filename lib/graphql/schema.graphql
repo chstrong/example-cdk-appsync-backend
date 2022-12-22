@@ -1,0 +1,30 @@
+type Query {
+	getNote(id: ID!): Note @aws_iam @aws_cognito_user_pools
+	listNotes: [Note] @aws_iam @aws_cognito_user_pools
+    listNotesToken(limit: Int, nextToken: String): NoteConnection @aws_iam @aws_cognito_user_pools
+}
+
+type Mutation {
+	createNote(input: NoteInput!): Note @aws_cognito_user_pools
+    updateNote(input: NoteInput!): Note @aws_cognito_user_pools
+    deleteNote(id: String!): String @aws_cognito_user_pools
+}
+
+type Note {
+	id: ID!
+	name: String!
+	content: String
+	imgKey: String
+}
+
+input NoteInput {
+	id: ID
+	name: String!
+	content: String
+	imgKey: String
+}
+
+type NoteConnection {
+	items: [Note!]
+	nextToken: String
+}

@@ -1,21 +1,49 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
-import { NotesBackendStack } from '../lib/notes-backend-stack';
+//import { NotesBackendStack } from '../lib/notes-backend-stack';
+import { AuthStack } from '../lib/auth-stack';
+import { FileStorageStack } from '../lib/file-storage-stack';
+import { DatabaseStack } from '../lib/database-stack';
+import { IdentityStack } from '../lib/identity-stack';
+import { APIStack } from '../lib/api-stack';
+import config from '../config.json';
+
 
 const app = new cdk.App();
-new NotesBackendStack(app, 'NotesBackendStack', {
-  /* If you don't specify 'env', this stack will be environment-agnostic.
-   * Account/Region-dependent features and context lookups will not work,
-   * but a single synthesized template can be deployed anywhere. */
 
-  /* Uncomment the next line to specialize this stack for the AWS Account
-   * and Region that are implied by the current CLI configuration. */
-  // env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
+// new NotesBackendStack(app, 'NotesBackendStack', {});
 
-  /* Uncomment the next line if you know exactly what Account and Region you
-   * want to deploy the stack to. */
-  // env: { account: '123456789012', region: 'us-east-1' },
+const authStack = new AuthStack(app, 'AuthStack', {
+  appName: config.appName,
+  stage: config.stage,
+})
 
-  /* For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html */
-});
+const identityStack = new IdentityStack(app, 'IdentityStack', {
+  appName: config.appName,
+  stage: config.stage,
+	userpool: authStack.userpool,
+	userpoolClient: authStack.userPoolClient,
+})
+
+const databaseStack = new DatabaseStack(app, 'DatabaseStack', {
+  appName: config.appName,
+  stage: config.stage,
+})
+
+const apiStack = new APIStack(app, 'AppSyncAPIStack', {
+  appName: config.appName,
+  stage: config.stage,
+	userpool: authStack.userpool,
+	noteTable: databaseStack.noteTable,
+	unauthenticatedRole: identityStack.unauthenticatedRole,
+	identityPool: identityStack.identityPool,
+})
+
+const fileStorageStack = new FileStorageStack(app, 'FileStorageStack', {
+  appName: config.appName,
+  stage: config.stage,
+	authenticatedRole: identityStack.authenticatedRole,
+	unauthenticatedRole: identityStack.unauthenticatedRole,
+	allowedOrigins: ['http://localhost:3000'],
+})
