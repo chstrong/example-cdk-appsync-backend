@@ -20,6 +20,7 @@ interface APIStackProps extends StackProps {
     stage: String,
 	userpool: UserPool
 	noteTable: Table
+    categoryTable: Table
 	unauthenticatedRole: IRole
 	identityPool: IdentityPool
 }
@@ -102,6 +103,53 @@ export class APIStack extends Stack {
 			responseMappingTemplate: MappingTemplate.fromFile(
 				path.join(__dirname, 'mappingTemplates/query-list-notes-token-res.vtl')
 			),
+		});
+
+
+
+		const CategoryDataSource = api.addDynamoDbDataSource('CategoryDataSource', props.categoryTable);
+
+		api.grantQuery(props.unauthenticatedRole, 'getCategory', 'listCategories');
+
+		CategoryDataSource.createResolver('CategoryGetItemResolver', {
+			typeName: 'Query',
+			fieldName: 'getCategory',
+			requestMappingTemplate: MappingTemplate.dynamoDbGetItem('id', 'id'),
+			responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
+		});
+
+		CategoryDataSource.createResolver('CategoryCreateItemResolver', {
+			typeName: 'Mutation',
+			fieldName: 'createCategory',
+			requestMappingTemplate: MappingTemplate.dynamoDbPutItem(
+				PrimaryKey.partition('id').auto(),
+				Values.projecting('input')
+			),
+			responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
+		});
+
+		CategoryDataSource.createResolver('CategoryUpdateItemResolver', {
+			typeName: 'Mutation',
+			fieldName: 'updateCategory',
+			requestMappingTemplate: MappingTemplate.dynamoDbPutItem(
+				PrimaryKey.partition('id').is('input.id'),
+				Values.projecting('input')
+			),
+			responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
+		});
+        
+		CategoryDataSource.createResolver('CategoryDeleteItemResolver', {
+			typeName: 'Mutation',
+			fieldName: 'deleteCategory',
+            requestMappingTemplate: MappingTemplate.dynamoDbDeleteItem('id', 'id'),
+            responseMappingTemplate: MappingTemplate.dynamoDbResultItem(),
+		});          
+
+		CategoryDataSource.createResolver('CategoryListItemsResolver', {
+			typeName: 'Query',
+			fieldName: 'listCategories',
+			requestMappingTemplate: MappingTemplate.dynamoDbScanTable(),
+			responseMappingTemplate: MappingTemplate.dynamoDbResultList(),
 		});
 
 		new CfnOutput(this, 'GraphQLAPIURL', {

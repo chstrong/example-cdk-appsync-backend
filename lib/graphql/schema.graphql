@@ -1,13 +1,18 @@
 type Query {
 	getNote(id: ID!): Note @aws_iam @aws_cognito_user_pools
+    getCategory(id: ID!): Category @aws_iam @aws_cognito_user_pools
 	listNotes: [Note] @aws_iam @aws_cognito_user_pools
-    listNotesToken(limit: Int, nextToken: String): NoteConnection @aws_iam @aws_cognito_user_pools
+    listCategories: [Category] @aws_iam @aws_cognito_user_pools
+    listNotesToken(limit: Int, nextToken: String): NoteConnection @aws_iam @aws_cognito_user_pools 
 }
 
 type Mutation {
 	createNote(input: NoteInput!): Note @aws_cognito_user_pools
+    createCategory(input: CategoryInput!): Category @aws_cognito_user_pools
     updateNote(input: NoteInput!): Note @aws_cognito_user_pools
+    updateCategory(input: CategoryInput!): Category @aws_cognito_user_pools
     deleteNote(id: String!): String @aws_cognito_user_pools
+    deleteCategory(id: String!): String @aws_cognito_user_pools
 }
 
 type Note {
@@ -15,6 +20,7 @@ type Note {
 	name: String!
 	content: String
 	imgKey: String
+    category: Category
 }
 
 input NoteInput {
@@ -27,4 +33,15 @@ input NoteInput {
 type NoteConnection {
 	items: [Note!]
 	nextToken: String
+}
+
+type Category {
+    id: ID!
+    name: String!
+    notes: [Note]
+}
+
+input CategoryInput {
+    id: ID
+    name: String!
 }

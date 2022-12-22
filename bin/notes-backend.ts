@@ -36,9 +36,12 @@ const apiStack = new APIStack(app, 'AppSyncAPIStack', {
   stage: config.stage,
 	userpool: authStack.userpool,
 	noteTable: databaseStack.noteTable,
+  categoryTable: databaseStack.categoryTable,
 	unauthenticatedRole: identityStack.unauthenticatedRole,
 	identityPool: identityStack.identityPool,
 })
+
+/*
 
 const fileStorageStack = new FileStorageStack(app, 'FileStorageStack', {
   appName: config.appName,
@@ -47,3 +50,5 @@ const fileStorageStack = new FileStorageStack(app, 'FileStorageStack', {
 	unauthenticatedRole: identityStack.unauthenticatedRole,
 	allowedOrigins: ['http://localhost:3000'],
 })
+
+*/
